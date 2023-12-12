@@ -11,30 +11,32 @@ CKernel::CKernel(QObject *parent) : QObject(parent)
 {
     //加载配置文件
     loadIniFile();
-
-    m_tcpClient = new TcpClientMediator;
+#ifdef USE_SERVER
+    //开启服务器
     m_tcpServer = new TcpServerMediator;
-
-    connect(m_tcpClient,SIGNAL(SIG_ReadyData(unsigned int, char *, int)),
-            this,SLOT(slot_dealClientData(unsigned int, char *, int)));
     connect(m_tcpServer,SIGNAL(SIG_ReadyData(unsigned int, char *, int)),
             this,SLOT(slot_dealServerData(unsigned int, char *, int)));
     //开启网络
     m_tcpServer->OpenNet();//默认0.0.0.0 连接所有网络卡
-    //客户端应该从配置文件读取服务端的ip，暂时测试使用实体机真实地址
+#endif
+    //开启客户端
+    m_tcpClient = new TcpClientMediator;
+    connect(m_tcpClient,SIGNAL(SIG_ReadyData(unsigned int, char *, int)),
+            this,SLOT(slot_dealClientData(unsigned int, char *, int)));
+    //客户端应该从配置文件读取服务端的ip
+    //暂时测试使用实体机真实地址
     m_tcpClient->OpenNet("10.50.60.25");
 
     m_mainDialog = new MainDialog;
-
     connect(m_mainDialog,SIGNAL(SIG_close()),
             this,SLOT(slot_destory()));
-
     m_mainDialog->show();
-
+#ifdef USE_TEST
     //测试 客户端向服务端传数据
     char strBuf[100] = "hello server";
     int len = strlen("hello server")+1;
     m_tcpClient->SendData(0,strBuf,len);
+#endif
     //sizeof(数组名)   整个数组长度
     //strlen()   内容长
 }
@@ -101,7 +103,7 @@ void CKernel::slot_dealClientData(unsigned int lSendIP, char *buf, int nlen)
     //回收空间
     delete[] buf;
 }
-
+#ifdef USE_SERVER
 void CKernel::slot_dealServerData(unsigned int lSendIP, char *buf, int nlen)
 {
     QString str = QString("来自客户端的：%1").arg(QString::fromStdString(buf));
@@ -112,3 +114,4 @@ void CKernel::slot_dealServerData(unsigned int lSendIP, char *buf, int nlen)
     //回收空间
     delete[] buf;
 }
+#endif
