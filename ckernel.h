@@ -8,6 +8,8 @@
 //1、构造 拷贝、构造、析构  私有化
 //2、提供静态公有的获取对象的方法
 
+#include <INetMediator.h>
+//class INetMediator;
 class CKernel : public QObject
 {
     Q_OBJECT
@@ -26,12 +28,19 @@ public:
     }
 
 private slots:
-
+    //普通槽函数
     void slot_destory();
+
+    //网络槽函数
+    void slot_dealClientData(unsigned int lSendIP , char* buf , int nlen);
+    void slot_dealServerData(unsigned int lSendIP , char* buf , int nlen);
 private:
     MainDialog * m_mainDialog;
     QString m_ip;
     QString m_port;
+    INetMediator * m_tcpClient;
+    INetMediator * m_tcpServer;
+
 };
 
 #endif // CKERNEL_H

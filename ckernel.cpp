@@ -3,16 +3,40 @@
 #include <QCoreApplication>//获取核心路径
 #include <QFileInfo>
 #include <QSettings>
+#include "TcpClientMediator.h"
+#include "TcpServerMediator.h"
+#include <QMessageBox>
+
 CKernel::CKernel(QObject *parent) : QObject(parent)
 {
     //加载配置文件
     loadIniFile();
+
+    m_tcpClient = new TcpClientMediator;
+    m_tcpServer = new TcpServerMediator;
+
+    connect(m_tcpClient,SIGNAL(SIG_ReadyData(unsigned int, char *, int)),
+            this,SLOT(slot_dealClientData(unsigned int, char *, int)));
+    connect(m_tcpServer,SIGNAL(SIG_ReadyData(unsigned int, char *, int)),
+            this,SLOT(slot_dealServerData(unsigned int, char *, int)));
+    //开启网络
+    m_tcpServer->OpenNet();//默认0.0.0.0 连接所有网络卡
+    //客户端应该从配置文件读取服务端的ip，暂时测试使用实体机真实地址
+    m_tcpClient->OpenNet("10.50.60.25");
+
     m_mainDialog = new MainDialog;
 
     connect(m_mainDialog,SIGNAL(SIG_close()),
             this,SLOT(slot_destory()));
 
     m_mainDialog->show();
+
+    //测试 客户端向服务端传数据
+    char strBuf[100] = "hello server";
+    int len = strlen("hello server")+1;
+    m_tcpClient->SendData(0,strBuf,len);
+    //sizeof(数组名)   整个数组长度
+    //strlen()   内容长
 }
 
 void CKernel::loadIniFile()
@@ -67,4 +91,24 @@ void CKernel::slot_destory()
 {
     qDebug()<<__func__;
     delete m_mainDialog;
+}
+
+void CKernel::slot_dealClientData(unsigned int lSendIP, char *buf, int nlen)
+{
+    QString str = QString("来自服务端的：%1").arg(QString::fromStdString(buf));
+    QMessageBox::about(NULL,"提示",str);//about是阻塞函数，是模态窗口
+
+    //回收空间
+    delete[] buf;
+}
+
+void CKernel::slot_dealServerData(unsigned int lSendIP, char *buf, int nlen)
+{
+    QString str = QString("来自客户端的：%1").arg(QString::fromStdString(buf));
+    QMessageBox::about(NULL,"提示",str);//about是阻塞函数，是模态窗口
+    //测试
+    //服务端直接返回这个数据
+    m_tcpServer->SendData(lSendIP,buf,nlen);
+    //回收空间
+    delete[] buf;
 }
