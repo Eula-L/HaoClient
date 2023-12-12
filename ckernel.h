@@ -26,6 +26,7 @@ public:
 
 private slots:
 
+    void slot_destory();
 private:
     MainDialog * m_mainDialog;
 

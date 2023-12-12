@@ -11,7 +11,7 @@ CONFIG += c++11
 SOURCES += \
     ckernel.cpp \
     main.cpp \
-    dialog.cpp
+    maindialog.cpp
 
 HEADERS += \
     ckernel.h \
