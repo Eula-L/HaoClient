@@ -37,6 +37,7 @@ bool TcpClientMediator::SendData( unsigned int lSendIP , char* buf , int nlen )
         return m_pNet->SendData( 0 , buf, nlen);
     else
     {
+        //如果客户端断了连接，重新建立连接
         m_pNet->UnInitNet();
         delete m_pNet;
         m_pNet = new TcpClient(this);
