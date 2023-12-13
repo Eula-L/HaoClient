@@ -3,6 +3,7 @@
 #include "maindialog.h"
 #include <QObject>
 #include <QString>
+#include "packdef.h"
 //核心处理类
 //单例
 //1、构造 拷贝、构造、析构  私有化
